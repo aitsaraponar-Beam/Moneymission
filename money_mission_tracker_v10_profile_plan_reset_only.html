@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Money Mission Tracker v6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07050c;--bg2:#13081d;--panel:#120d1d;--card:rgba(255,255,255,.07);--card2:rgba(255,255,255,.045);
+  --text:#fff8ff;--muted:#b9abc9;--line:rgba(255,255,255,.11);
+  --purple:#9d4edd;--pink:#ff4fa3;--yellow:#ffd24d;--green:#4ade80;--red:#fb7185;
+  --shadow:0 20px 50px rgba(0,0,0,.42);--r:24px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;min-height:100vh;font-family:"Noto Sans Thai",system-ui,sans-serif;color:var(--text);
+  background:radial-gradient(circle at 8% 8%,rgba(255,79,163,.17),transparent 24%),
+             radial-gradient(circle at 88% 4%,rgba(255,210,77,.13),transparent 22%),
+             radial-gradient(circle at 78% 44%,rgba(157,78,221,.18),transparent 25%),
+             linear-gradient(135deg,var(--bg),var(--bg2) 72%,#050408);
+}
+.svgicon{width:1.15em;height:1.15em;display:inline-block;vertical-align:-.18em;stroke:currentColor;fill:none}
+.app{max-width:1240px;margin:0 auto;padding:24px 16px 48px}
+.shell{display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start}
+.sidebar,.topbar,.card,.modal-card{
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.038));
+  border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(14px)
+}
+.sidebar{position:sticky;top:16px;border-radius:28px;padding:18px;overflow:hidden}
+.brand-badge{width:50px;height:50px;border-radius:17px;display:grid;place-items:center;background:linear-gradient(135deg,var(--purple),var(--pink),var(--yellow));color:#2b1200;margin-bottom:12px}
+.brand-badge .svgicon{width:28px;height:28px}
+.brand h1{margin:0;font-size:23px;line-height:1.12;letter-spacing:-.035em}
+.nav{display:grid;gap:8px;margin-top:18px}
+.nav button,button{
+  border:0;cursor:pointer;font-family:inherit;font-weight:900;border-radius:999px;padding:10px 14px;color:#fff;
+  background:linear-gradient(135deg,var(--purple),var(--pink));box-shadow:0 10px 20px rgba(255,79,163,.18);
+  display:inline-flex;align-items:center;gap:8px;justify-content:center;transition:.16s ease;font-size:13px
+}
+.nav button{width:100%;justify-content:flex-start;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);box-shadow:none;border-radius:16px}
+.nav button.active{background:linear-gradient(135deg,rgba(157,78,221,.52),rgba(255,79,163,.34));border-color:rgba(255,210,77,.24)}
+button:hover{transform:translateY(-1px);filter:brightness(1.08)}
+button.secondary{background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.13);box-shadow:none}
+button.warning{background:linear-gradient(135deg,#f59e0b,var(--yellow));color:#2c1600}
+button.danger{background:linear-gradient(135deg,#e11d48,var(--pink))}
+button.small{padding:8px 10px;font-size:12px}
+.quick-status{margin-top:16px;padding:14px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09)}
+.quick-status .label{color:var(--muted);font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.quick-status .value{margin-top:5px;font-size:25px;font-weight:900;letter-spacing:-.035em}
+.quick-status .note{margin-top:4px;color:#d7c7e5;font-size:12px}
+.topbar{border-radius:28px;padding:22px;margin-bottom:16px;position:relative;overflow:hidden}
+.topbar h2{margin:0;font-size:clamp(28px,3.5vw,42px);line-height:1.08;letter-spacing:-.04em}
+.topbar .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.1);font-size:12px;font-weight:900;color:#fff0a8}
+.tab-page{display:none}.tab-page.active{display:block}
+.grid{display:grid;gap:16px}.kpi-grid{grid-template-columns:repeat(4,1fr)}.two-col{grid-template-columns:1.05fr .95fr}.month-cards{grid-template-columns:repeat(4,1fr)}
+.card{border-radius:var(--r);padding:20px;overflow:hidden}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.section-title h3{margin:0;font-size:21px;line-height:1.2;letter-spacing:-.02em}
+.kpi{min-height:144px;display:flex;flex-direction:column;justify-content:space-between}
+.kpi-top{display:flex;justify-content:space-between;gap:10px}.kpi-label{color:#d8c9e8;font-size:12px;font-weight:900;letter-spacing:.03em;text-transform:uppercase}
+.kpi-value{margin-top:8px;font-size:32px;line-height:1;font-weight:900;letter-spacing:-.04em}.kpi-note{margin-top:8px;color:var(--muted);font-size:12px}
+.icon{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 22px rgba(0,0,0,.22)}
+.icon .svgicon{width:23px;height:23px}.i-purple{background:linear-gradient(135deg,var(--purple),var(--pink))}.i-pink{background:linear-gradient(135deg,var(--pink),#fb7185)}.i-yellow{background:linear-gradient(135deg,var(--yellow),#fb923c);color:#321700}.i-green{background:linear-gradient(135deg,var(--green),#22c55e);color:#04140a}
+.progress-shell,.month-card,.insight,.check-card,.mini{padding:15px;border-radius:20px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09)}
+.progress-head{display:flex;justify-content:space-between;gap:12px;font-weight:900;font-size:14px;margin-bottom:11px}
+.track{height:16px;border-radius:999px;background:rgba(255,255,255,.085);overflow:hidden;border:1px solid rgba(255,255,255,.09)}
+.fill{height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--purple),var(--pink),var(--yellow));box-shadow:0 0 22px rgba(255,79,163,.3);transition:.25s}
+.progress-note{margin-top:10px;color:#d5c6e4;font-size:12px;line-height:1.55}
+.insight-list{display:grid;gap:9px}.insight{font-size:13px;line-height:1.55;font-weight:700}.insight.good{border-color:rgba(74,222,128,.24);background:rgba(74,222,128,.08)}.insight.warn{border-color:rgba(255,210,77,.28);background:rgba(255,210,77,.08)}.insight.bad{border-color:rgba(251,113,133,.28);background:rgba(251,113,133,.08)}
+.table-wrap{overflow:auto;border-radius:20px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.02)}
+table{width:100%;min-width:740px;border-collapse:separate;border-spacing:0}th,td{padding:12px 13px;border-bottom:1px solid rgba(255,255,255,.075);text-align:left;vertical-align:middle;font-size:13px}th{position:sticky;top:0;z-index:2;background:rgba(22,13,35,.96);color:#fff0a8;font-weight:900;white-space:nowrap}tr:last-child td{border-bottom:0}td.num{text-align:right;font-weight:900;white-space:nowrap}.month-cell{font-weight:900;color:#ffd6ea;white-space:nowrap}
+.badge{display:inline-flex;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:900;white-space:nowrap;border:1px solid transparent}.badge.done{background:rgba(74,222,128,.14);color:#b7f7cd;border-color:rgba(74,222,128,.18)}.badge.progress{background:rgba(255,210,77,.15);color:#fff0a8;border-color:rgba(255,210,77,.2)}.badge.risk{background:rgba(251,113,133,.15);color:#fecdd3;border-color:rgba(251,113,133,.2)}.badge.neutral{background:rgba(255,255,255,.08);color:#e9ddf7;border-color:rgba(255,255,255,.1)}
+input,select{width:100%;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.07);color:#fff;border-radius:14px;padding:10px 11px;outline:none;font-family:inherit;font-size:14px}select option{background:#171126;color:white}input:focus,select:focus{border-color:rgba(255,210,77,.5);box-shadow:0 0 0 4px rgba(255,210,77,.1)}
+.input-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.field{display:grid;gap:7px}.field label,.field-label{color:#e7d9f6;font-size:12px;font-weight:900;letter-spacing:.02em}.check-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.check-card{display:flex;gap:12px;align-items:flex-start;min-height:82px}.check-card input{width:21px;height:21px;accent-color:var(--pink);margin-top:2px;flex:0 0 auto}.check-card h4{margin:0 0 4px;font-size:15px}.check-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}
+.month-card h4{margin:0 0 11px;font-size:17px;color:#ffd6ea}.month-stat{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.065);font-size:13px}.month-stat:last-child{border-bottom:0}.month-stat span:first-child{color:var(--muted)}.month-stat span:last-child{font-weight:900;text-align:right}
+.progress-layout{display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start}
+.debt-summary{display:grid;gap:12px}
+.debt-stat{padding:18px;border-radius:22px;background:linear-gradient(135deg,rgba(157,78,221,.18),rgba(255,79,163,.10));border:1px solid rgba(255,255,255,.1)}
+.debt-stat span{display:block;color:var(--muted);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}.debt-stat b{display:block;margin-top:7px;font-size:30px;letter-spacing:-.04em}
+.timeline{display:grid;gap:10px}
+.timeline-item{display:grid;grid-template-columns:72px minmax(0,1fr) 92px;gap:12px;align-items:center;padding:13px;border-radius:18px;background:rgba(255,255,255,.042);border:1px solid rgba(255,255,255,.085)}
+.timeline-month{font-weight:900;color:#ffd6ea}.timeline-bar{height:12px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.09)}.timeline-fill{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--pink),var(--yellow));border-radius:inherit}.timeline-value{text-align:right;font-weight:900;color:#fff0a8;font-size:13px}.timeline-sub{margin-top:5px;color:var(--muted);font-size:11px}
+.actions,.select-wrap{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.check-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.64);backdrop-filter:blur(10px)}.modal.show{display:flex}.modal-card{width:min(640px,100%);border-radius:28px;overflow:hidden}.modal-head{padding:20px;display:flex;justify-content:space-between;gap:14px;align-items:flex-start;background:linear-gradient(135deg,rgba(157,78,221,.3),rgba(255,79,163,.18),rgba(255,210,77,.1));border-bottom:1px solid rgba(255,255,255,.1)}.modal-head h3{margin:0;font-size:23px;letter-spacing:-.03em}.modal-body{padding:20px}.modal-actions{display:flex;justify-content:flex-end;gap:9px;padding:0 20px 20px;flex-wrap:wrap}.close-btn{width:36px;height:36px;border-radius:14px;padding:0;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);box-shadow:none;flex:0 0 auto}
+.achievement-preview{position:relative;overflow:hidden;border-radius:26px;padding:24px;background:radial-gradient(circle at 18% 16%,rgba(255,210,77,.32),transparent 28%),radial-gradient(circle at 82% 22%,rgba(255,79,163,.36),transparent 30%),linear-gradient(135deg,rgba(157,78,221,.34),rgba(255,79,163,.2),rgba(255,210,77,.12)),rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);min-height:350px}.achievement-icon{width:60px;height:60px;border-radius:21px;display:grid;place-items:center;background:linear-gradient(135deg,var(--yellow),var(--pink));color:#2d1200;box-shadow:0 18px 34px rgba(255,79,163,.24)}.achievement-icon .svgicon{width:32px;height:32px}.achievement-title{margin:0;font-size:32px;line-height:1.05;letter-spacing:-.04em}.achievement-subtitle{margin:13px 0 2px;color:#fff0a8;font-size:17px;font-weight:900}.achievement-message{margin:13px 0;color:#efe4fb;font-size:14px;line-height:1.65}.achievement-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.achievement-metric{padding:13px;border-radius:17px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.12)}.achievement-metric span{display:block;color:#cdbfe0;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}.achievement-metric b{display:block;font-size:21px;letter-spacing:-.03em}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;background:rgba(18,12,28,.94);color:white;border:1px solid rgba(255,255,255,.14);box-shadow:var(--shadow);border-radius:999px;padding:11px 15px;z-index:80;transition:.22s;font-size:13px;font-weight:900;pointer-events:none}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.accent-yellow{color:#fff0a8}.accent-pink{color:#ffb1d7}.accent-green{color:#bbf7d0}
+@media(max-width:1120px){.shell{grid-template-columns:1fr}.sidebar{position:relative;top:auto}.nav{grid-template-columns:repeat(3,1fr)}.kpi-grid,.two-col,.month-cards,.progress-layout{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.app{padding:16px 10px 40px}.sidebar,.topbar,.card{border-radius:22px}.nav,.kpi-grid,.two-col,.month-cards,.check-grid,.input-grid,.progress-layout{grid-template-columns:1fr}.section-title{align-items:flex-start;flex-direction:column}.timeline-item{grid-template-columns:1fr;gap:8px}.timeline-value{text-align:left}.actions button,.modal-actions button{width:100%}}
+@media print{body{background:white;color:black}.app{max-width:none;padding:0}.sidebar,.actions,.modal,.toast{display:none!important}.shell{display:block}.card,.topbar{box-shadow:none;backdrop-filter:none}.tab-page{display:block!important;page-break-before:always}}
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+<symbol id="ico-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M7 15h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="ico-dashboard" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13" y="4" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="13" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13" y="13" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="ico-plan" viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v16H5V5a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="ico-check" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="m8 12 3 3 5-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="ico-chart" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="m7 15 4-4 3 3 5-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="ico-setting" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.04.04a2.1 2.1 0 0 1-2.98 2.98l-.04-.04A1.8 1.8 0 0 0 14.8 19.6a1.8 1.8 0 0 0-1.1 1.66V21a2.1 2.1 0 0 1-4.2 0v-.06A1.8 1.8 0 0 0 8.4 19.3a1.8 1.8 0 0 0-1.98.36l-.04.04a2.1 2.1 0 0 1-2.98-2.98l.04-.04A1.8 1.8 0 0 0 3.8 14.7 1.8 1.8 0 0 0 2.1 13H2a2.1 2.1 0 0 1 0-4.2h.08A1.8 1.8 0 0 0 3.8 7.6a1.8 1.8 0 0 0-.36-1.98l-.04-.04A2.1 2.1 0 1 1 6.38 2.6l.04.04A1.8 1.8 0 0 0 8.4 3a1.8 1.8 0 0 0 1.1-1.66V1.2a2.1 2.1 0 0 1 4.2 0v.14A1.8 1.8 0 0 0 14.8 3a1.8 1.8 0 0 0 1.98-.36l.04-.04a2.1 2.1 0 1 1 2.98 2.98l-.04.04A1.8 1.8 0 0 0 19.4 7.6 1.8 1.8 0 0 0 21 8.8h.1a2.1 2.1 0 0 1 0 4.2H21a1.8 1.8 0 0 0-1.6 2Z" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round"/></symbol>
+<symbol id="ico-wallet" viewBox="0 0 24 24"><path d="M4 7h15a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a3 3 0 0 1-3-3V7.5A3.5 3.5 0 0 1 5.5 4H18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16 13h5" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="13" r="1" fill="currentColor"/></symbol>
+<symbol id="ico-spark" viewBox="0 0 24 24"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="ico-save" viewBox="0 0 24 24"><path d="M5 3h12l2 2v16H5V3Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 3v7h8V3M8 21v-7h8v7" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="ico-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 20h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="ico-upload" viewBox="0 0 24 24"><path d="M12 15V3m0 0 4 4m-4-4-4 4M4 20h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="ico-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 18H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7v-7Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="ico-reset" viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10A7 7 0 0 1 18 6M18.5 14A7 7 0 0 1 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+<symbol id="ico-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+<symbol id="ico-edit" viewBox="0 0 24 24"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m13.5 6.5 4 4" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="ico-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+<symbol id="ico-trophy" viewBox="0 0 24 24"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 6H5a2 2 0 0 0 0 4h3M16 6h3a2 2 0 0 1 0 4h-3M12 12v5M9 21h6M10 17h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="ico-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.8 12.2 7 22l5-3 5 3-1.8-9.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+</svg>
+
+<main class="app">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge"><svg class="svgicon"><use href="#ico-card"/></svg></div>
+        <h1><span id="brandAppName">Money Mission Tracker</span><br><span class="accent-yellow" id="brandOwnerName">Beam</span></h1>
+      </div>
+      <nav class="nav">
+        <button class="active" data-tab="dashboard" onclick="switchTab('dashboard')"><svg class="svgicon"><use href="#ico-dashboard"/></svg><span data-t="navDashboard"></span></button>
+        <button data-tab="monthly" onclick="switchTab('monthly')"><svg class="svgicon"><use href="#ico-plan"/></svg><span data-t="navMonthly"></span></button>
+        <button data-tab="checklist" onclick="switchTab('checklist')"><svg class="svgicon"><use href="#ico-check"/></svg><span data-t="navChecklist"></span></button>
+        <button data-tab="progress" onclick="switchTab('progress')"><svg class="svgicon"><use href="#ico-chart"/></svg><span data-t="navProgress"></span></button>
+        <button data-tab="setting" onclick="switchTab('setting')"><svg class="svgicon"><use href="#ico-setting"/></svg><span data-t="navSetting"></span></button>
+      </nav>
+      <div class="quick-status"><div class="label" data-t="quickStatus"></div><div class="value" id="sideProgress">0%</div><div class="note" id="sideNote"></div></div>
+    </aside>
+
+    <section class="content">
+      <header class="topbar">
+        <h2 id="pageTitle"></h2>
+        <div class="meta">
+          <span class="pill" id="topDebtPill"></span>
+          <span class="pill" id="topLangPill"></span>
+        </div>
+      </header>
+
+      <section class="tab-page active" id="tab-dashboard">
+        <div class="grid kpi-grid">
+          <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label" data-t="remainingDebt"></div><div class="kpi-value" id="kpiRemainingDebt">0</div></div><div class="icon i-pink"><svg class="svgicon"><use href="#ico-card"/></svg></div></div><div class="kpi-note" data-t="remainingNote"></div></div>
+          <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label" data-t="actualProgress"></div><div class="kpi-value" id="kpiProgress">0%</div></div><div class="icon i-purple"><svg class="svgicon"><use href="#ico-chart"/></svg></div></div><div class="kpi-note" data-t="actualNote"></div></div>
+          <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label" data-t="totalSaving"></div><div class="kpi-value" id="kpiSaving">0</div></div><div class="icon i-green"><svg class="svgicon"><use href="#ico-wallet"/></svg></div></div><div class="kpi-note" data-t="savingActualNote"></div></div>
+          <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label" data-t="currentStatus"></div><div class="kpi-value" id="kpiStatus">-</div></div><div class="icon i-yellow"><svg class="svgicon"><use href="#ico-spark"/></svg></div></div><div class="kpi-note" id="kpiStatusNote"></div></div>
+        </div>
+        <div class="grid two-col" style="margin-top:16px;">
+          <div class="card"><div class="section-title"><h3 data-t="overallProgress"></h3></div><div class="progress-shell"><div class="progress-head"><span data-t="paidStarting"></span><span id="overallProgressText">0 / 0</span></div><div class="track"><div class="fill" id="overallProgressFill"></div></div><div class="progress-note" id="overallProgressNote"></div></div></div>
+          <div class="card"><div class="section-title"><h3 data-t="insightTitle"></h3></div><div class="insight-list" id="dashboardInsights"></div></div>
+        </div>
+        <div class="card" style="margin-top:16px;"><div class="section-title"><h3 data-t="monthSnapshot"></h3></div><div class="grid month-cards" id="dashboardMonthCards"></div></div>
+      </section>
+
+      <section class="tab-page" id="tab-monthly">
+        <div class="card">
+          <div class="section-title"><h3 data-t="monthlyPlan"></h3><button class="secondary small" onclick="addMonth()"><svg class="svgicon"><use href="#ico-plus"/></svg><span data-t="addMonth"></span></button></div>
+          <div class="table-wrap"><table><thead><tr><th>Month</th><th>Income</th><th>Fixed Cost</th><th>Debt Pay</th><th>Saving</th><th>Personal Use</th><th>Debt Left</th><th>Status</th><th>Action</th></tr></thead><tbody id="monthRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="tab-page" id="tab-checklist">
+        <div class="card">
+          <div class="check-toolbar">
+            <div class="section-title" style="margin:0;"><h3 data-t="checklistTitle"></h3></div>
+            <div class="select-wrap"><label class="field-label" data-t="selectedMonth"></label><select id="selectedMonth" onchange="renderChecklist()"></select><button class="secondary small" id="viewAchievementBtn" onclick="openAchievementForSelected()" style="display:none"><svg class="svgicon"><use href="#ico-award"/></svg><span data-t="viewAchievement"></span></button></div>
+          </div>
+          <div class="check-grid" id="checklistArea"></div>
+        </div>
+        <div class="grid two-col" style="margin-top:16px;">
+          <div class="card"><div class="section-title"><h3 data-t="checkProgress"></h3></div><div class="progress-shell"><div class="progress-head"><span id="checkProgressLabel"></span><span id="checkProgressText">0%</span></div><div class="track"><div class="fill" id="checkProgressFill"></div></div></div></div>
+          <div class="card"><div class="section-title"><h3 data-t="selectedSnapshot"></h3></div><div class="grid month-cards" style="grid-template-columns:repeat(2,minmax(0,1fr));" id="selectedSnapshot"></div></div>
+        </div>
+      </section>
+
+      <section class="tab-page" id="tab-progress">
+        <div class="progress-layout">
+          <div class="card">
+            <div class="section-title"><h3 data-t="debtTimeline"></h3></div>
+            <div class="timeline" id="debtTimeline"></div>
+          </div>
+          <div class="debt-summary">
+            <div class="debt-stat"><span data-t="actualPaid"></span><b id="progressPaid">0</b></div>
+            <div class="debt-stat"><span data-t="planForecast"></span><b id="progressForecast">0</b></div>
+            <div class="debt-stat"><span data-t="debtLeft"></span><b id="progressLeft">0</b></div>
+            <div class="debt-stat"><span data-t="actualProgress"></span><b id="progressPct">0%</b></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px;"><div class="section-title"><h3 data-t="progressTable"></h3></div><div class="table-wrap"><table><thead><tr><th>Month</th><th>Plan Pay</th><th>Actual Paid</th><th>Plan Forecast</th><th>Debt Left</th><th>Actual Progress</th><th>Remark</th></tr></thead><tbody id="progressRows"></tbody></table></div></div>
+      </section>
+
+      <section class="tab-page" id="tab-setting">
+        <div class="grid two-col">
+          <div class="grid" style="gap:16px;">
+            <div class="card">
+              <div class="section-title"><h3>Profile</h3></div>
+              <div class="input-grid">
+                <div class="field"><label>App Name</label><input type="text" id="appName" oninput="updateAppName(this.value)"></div>
+                <div class="field"><label>Owner Name</label><input type="text" id="ownerName" oninput="updateOwnerName(this.value)"></div>
+                <div class="field"><label>Language Mode</label><select id="languageMode" onchange="updateLanguage(this.value)"><option value="mixed">Mixed</option><option value="th">TH</option><option value="en">EN</option></select></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="section-title"><h3 data-t="planSetting"></h3></div>
+              <div class="input-grid">
+                <div class="field"><label>Starting Debt</label><input type="number" id="startingDebt" min="0" step="100" oninput="updateStartingDebt(this.value)"></div>
+                <div class="field"><label>Target Months</label><input type="number" id="targetMonths" min="1" max="24" step="1" oninput="updateTargetMonths(this.value)"></div>
+                <div class="field"><label>Minimum Pay / Month</label><input type="text" id="minPayDisplay" readonly></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-title"><h3 data-t="dangerZone"></h3></div>
+            <div class="insight-list">
+              <div class="insight bad" data-t="resetWarning"></div>
+            </div>
+            <div class="actions" style="margin-top:14px;">
+              <button class="danger" onclick="openResetModal()"><svg class="svgicon"><use href="#ico-reset"/></svg><span data-t="resetPlan"></span></button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </div>
+</main>
+
+<div class="modal" id="editModal" onclick="closeModalOnBackdrop(event)">
+  <div class="modal-card">
+    <div class="modal-head"><div><h3 id="modalTitle">Edit Month</h3></div><button class="close-btn" onclick="closeEditModal()"><svg class="svgicon"><use href="#ico-close"/></svg></button></div>
+    <div class="modal-body"><div class="input-grid">
+      <div class="field"><label>Income</label><input type="number" id="editIncome" min="0"></div>
+      <div class="field"><label>House + Utilities</label><input type="number" id="editHouse" min="0"></div>
+      <div class="field"><label>Transport</label><input type="number" id="editTransport" min="0"></div>
+      <div class="field"><label>Food</label><input type="number" id="editFood" min="0"></div>
+      <div class="field"><label>Debt Pay</label><input type="number" id="editDebtPay" min="0"></div>
+      <div class="field"><label>Saving</label><input type="number" id="editSaving" min="0"></div>
+    </div><div class="progress-note" id="editPreview" style="margin-top:12px;"></div></div>
+    <div class="modal-actions"><button class="secondary" onclick="closeEditModal()" data-t="cancel"></button><button onclick="saveEditMonth()" data-t="saveMonth"></button></div>
+  </div>
+</div>
+
+<div class="modal" id="achievementModal" onclick="closeAchievementOnBackdrop(event)">
+  <div class="modal-card" style="width:min(720px,100%);">
+    <div class="modal-head"><div><h3 id="achModalHead"></h3></div><button class="close-btn" onclick="closeAchievementModal()"><svg class="svgicon"><use href="#ico-close"/></svg></button></div>
+    <div class="modal-body">
+      <div class="achievement-preview">
+        <div class="achievement-icon"><svg class="svgicon"><use href="#ico-trophy"/></svg></div>
+        <p class="achievement-subtitle" id="achSubtitle"></p>
+        <h3 class="achievement-title" id="achTitle"></h3>
+        <p class="achievement-message" id="achMessage"></p>
+        <div class="achievement-metrics">
+          <div class="achievement-metric"><span id="achLblPaid"></span><b id="achDebtPaid">0</b></div>
+          <div class="achievement-metric"><span id="achLblLeft"></span><b id="achDebtLeft">0</b></div>
+          <div class="achievement-metric"><span id="achLblSaving"></span><b id="achSaving">0</b></div>
+          <div class="achievement-metric"><span>Checklist</span><b>5/5</b></div>
+        </div>
+        <p class="progress-note" id="achFooter" style="margin:13px 0 0;color:#fff0a8;font-weight:900;"></p>
+      </div>
+    </div>
+    <div class="modal-actions"><button class="secondary" onclick="closeAchievementModal()" data-t="close"></button><button onclick="downloadAchievementCard()"><svg class="svgicon"><use href="#ico-download"/></svg><span data-t="downloadCard"></span></button></div>
+  </div>
+</div>
+
+<div class="modal" id="resetModal" onclick="closeResetOnBackdrop(event)">
+  <div class="modal-card" style="width:min(520px,100%);">
+    <div class="modal-head">
+      <div><h3 data-t="resetModalTitle"></h3></div>
+      <button class="close-btn" onclick="closeResetModal()"><svg class="svgicon"><use href="#ico-close"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="insight bad" data-t="resetModalMessage"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeResetModal()" data-t="cancel"></button>
+      <button class="danger" onclick="confirmResetPlan()"><svg class="svgicon"><use href="#ico-reset"/></svg><span data-t="confirmReset"></span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+
+<script>
+const STORAGE_KEY="moneyMissionTrackerV6";
+const TXT={
+ mixed:{navDashboard:"Dashboard",navMonthly:"Monthly Plan",navChecklist:"Checklist",navProgress:"Debt Progress",navSetting:"Profile & Plan",quickStatus:"Quick Status",dashboardTitle:"Dashboard",monthlyTitle:"Monthly Plan",checklistPageTitle:"Checklist",progressTitle:"Debt Progress",settingTitle:"Profile & Plan",remainingDebt:"Remaining Debt",remainingNote:"ยอดหนี้คงเหลือ",debtProgress:"Debt Progress",progressNote:"Paid ÷ Starting debt",totalSaving:"Total Saving",savingNote:"เงินเก็บสะสม",savingActualNote:"นับเฉพาะเดือนที่ติ๊กโอนเงินเก็บแล้ว",currentStatus:"Current Status",overallProgress:"Overall Progress",paidStarting:"Actual Paid / Starting Debt",actualPaid:"Actual Paid",actualProgress:"Actual Progress",planForecast:"Plan Forecast",forecastNote:"ยอดจ่ายหนี้ตามแผนทั้งหมด",actualNote:"นับเฉพาะเดือนที่ติ๊กจ่ายหนี้แล้ว",insightTitle:"Insight / Warning",monthSnapshot:"Month Snapshot",monthlyPlan:"Monthly Plan",addMonth:"Add Month",checklistTitle:"Monthly Checklist",selectedMonth:"Selected Month",viewAchievement:"View Achievement",checkProgress:"Checklist Progress",selectedSnapshot:"Selected Snapshot",debtTimeline:"Debt-Free Timeline",progressTable:"Progress Table",planSetting:"Plan Setting",profilePlan:"Profile & Plan",dangerZone:"Danger Zone",backupTitle:"Danger Zone",saveData:"Save",exportBackup:"Export",importBackup:"Import",printPdf:"Print / PDF",reset:"Reset",resetPlan:"Reset Plan",resetWarning:"Reset will clear all progress, checklist, and achievement history. Use only when you want to start over.",resetModalTitle:"Reset Plan?",resetModalMessage:"This will clear all progress, checklist, and achievement history.",confirmReset:"Reset Plan",cancel:"Cancel",saveMonth:"Save Month",close:"Close",downloadCard:"Download Card",achModalHead:"Achievement Unlocked",achTitle:"Mission Complete",achDebtFree:"Debt-Free Unlocked",achMsg:"เก่งมาก เดือนนี้ทำครบแล้ว อีกก้าวใกล้ Debt-Free Life.",achMsgFree:"สุดยอด! คุณปิดหนี้ตามเป้าหมายแล้ว.",achFooter:"Pay Debt First · Save First · Spend with Intention",completed:"Completed",inProgress:"In Progress",risk:"Risk",notStarted:"Not Started",onTrack:"On Track",needCheck:"Need Check",startNow:"Start Now",debtFree:"Debt Free",personalUse:"Personal Use",fixedCost:"Fixed Cost",status:"Status",debtPay:"Debt Pay",debtLeft:"Debt Left",paid:"Debt Paid",saving:"Saving",checklist:"Checklist"},
+ th:{navDashboard:"แดชบอร์ด",navMonthly:"แผนรายเดือน",navChecklist:"เช็กลิสต์",navProgress:"ความคืบหน้าหนี้",navSetting:"โปรไฟล์ / แผน",quickStatus:"สถานะเร็ว",dashboardTitle:"แดชบอร์ด",monthlyTitle:"แผนรายเดือน",checklistPageTitle:"เช็กลิสต์",progressTitle:"ความคืบหน้าหนี้",settingTitle:"โปรไฟล์ / แผน",remainingDebt:"หนี้คงเหลือ",remainingNote:"ยอดหนี้คงเหลือ",debtProgress:"ความคืบหน้า",progressNote:"ยอดจ่ายสะสม ÷ หนี้ตั้งต้น",totalSaving:"เงินเก็บสะสม",savingNote:"เงินเก็บรวม",savingActualNote:"นับเฉพาะเดือนที่ติ๊กโอนเงินเก็บแล้ว",currentStatus:"สถานะปัจจุบัน",overallProgress:"ภาพรวมความคืบหน้า",paidStarting:"ยอดจ่ายจริง / หนี้ตั้งต้น",actualPaid:"ยอดจ่ายจริง",actualProgress:"ความคืบหน้าจริง",planForecast:"ยอดตามแผน",forecastNote:"ยอดจ่ายหนี้ตามแผนทั้งหมด",actualNote:"นับเฉพาะเดือนที่ติ๊กจ่ายหนี้แล้ว",insightTitle:"ข้อสังเกต / คำเตือน",monthSnapshot:"สรุปรายเดือน",monthlyPlan:"แผนรายเดือน",addMonth:"เพิ่มเดือน",checklistTitle:"เช็กลิสต์รายเดือน",selectedMonth:"เดือนที่เลือก",viewAchievement:"ดูการ์ดความสำเร็จ",checkProgress:"ความคืบหน้าเช็กลิสต์",selectedSnapshot:"สรุปเดือนที่เลือก",debtTimeline:"ไทม์ไลน์ปิดหนี้",progressTable:"ตารางความคืบหน้า",planSetting:"ตั้งค่าแผน",profilePlan:"โปรไฟล์ / แผน",dangerZone:"โซนรีเซ็ต",backupTitle:"โซนรีเซ็ต",saveData:"บันทึก",exportBackup:"ส่งออก",importBackup:"นำเข้า",printPdf:"พิมพ์ / PDF",reset:"รีเซ็ต",resetPlan:"รีเซ็ตแผน",resetWarning:"การรีเซ็ตจะล้างความคืบหน้า เช็กลิสต์ และประวัติ Achievement ทั้งหมด ใช้เฉพาะเมื่อต้องการเริ่มใหม่",resetModalTitle:"รีเซ็ตแผน?",resetModalMessage:"ระบบจะล้างข้อมูลความคืบหน้า เช็กลิสต์ และการ์ดความสำเร็จทั้งหมด",confirmReset:"รีเซ็ตแผน",cancel:"ยกเลิก",saveMonth:"บันทึกเดือนนี้",close:"ปิด",downloadCard:"ดาวน์โหลดการ์ด",achModalHead:"ปลดล็อกความสำเร็จ",achTitle:"ภารกิจสำเร็จ",achDebtFree:"ปลดล็อกชีวิตปลอดหนี้",achMsg:"เก่งมาก เดือนนี้ทำครบแล้ว อีกก้าวใกล้ชีวิตปลอดหนี้",achMsgFree:"สุดยอด! คุณปิดหนี้ตามเป้าหมายแล้ว",achFooter:"จ่ายหนี้ก่อน · เก็บก่อน · ใช้อย่างมีเป้าหมาย",completed:"สำเร็จ",inProgress:"กำลังทำ",risk:"เสี่ยง",notStarted:"ยังไม่เริ่ม",onTrack:"ไปต่อได้",needCheck:"ควรตรวจสอบ",startNow:"เริ่มได้เลย",debtFree:"ปลอดหนี้",personalUse:"เงินใช้ส่วนตัว",fixedCost:"ค่าใช้จ่ายจำเป็น",status:"สถานะ",debtPay:"จ่ายหนี้",debtLeft:"หนี้คงเหลือ",paid:"จ่ายหนี้แล้ว",saving:"เงินเก็บ",checklist:"เช็กลิสต์"},
+ en:{navDashboard:"Dashboard",navMonthly:"Monthly Plan",navChecklist:"Checklist",navProgress:"Debt Progress",navSetting:"Profile & Plan",quickStatus:"Quick Status",dashboardTitle:"Dashboard",monthlyTitle:"Monthly Plan",checklistPageTitle:"Checklist",progressTitle:"Debt Progress",settingTitle:"Profile & Plan",remainingDebt:"Remaining Debt",remainingNote:"Remaining balance",debtProgress:"Debt Progress",progressNote:"Paid ÷ starting debt",totalSaving:"Total Saving",savingNote:"Accumulated saving",savingActualNote:"Counts only months marked as saving transferred",currentStatus:"Current Status",overallProgress:"Overall Progress",paidStarting:"Actual Paid / Starting Debt",actualPaid:"Actual Paid",actualProgress:"Actual Progress",planForecast:"Plan Forecast",forecastNote:"ยอดจ่ายหนี้ตามแผนทั้งหมด",actualNote:"นับเฉพาะเดือนที่ติ๊กจ่ายหนี้แล้ว",insightTitle:"Insight / Warning",monthSnapshot:"Month Snapshot",monthlyPlan:"Monthly Plan",addMonth:"Add Month",checklistTitle:"Monthly Checklist",selectedMonth:"Selected Month",viewAchievement:"View Achievement",checkProgress:"Checklist Progress",selectedSnapshot:"Selected Snapshot",debtTimeline:"Debt-Free Timeline",progressTable:"Progress Table",planSetting:"Plan Setting",profilePlan:"Profile & Plan",dangerZone:"Danger Zone",backupTitle:"Danger Zone",saveData:"Save",exportBackup:"Export",importBackup:"Import",printPdf:"Print / PDF",reset:"Reset",resetPlan:"Reset Plan",resetWarning:"Reset will clear all progress, checklist, and achievement history. Use only when you want to start over.",resetModalTitle:"Reset Plan?",resetModalMessage:"This will clear all progress, checklist, and achievement history.",confirmReset:"Reset Plan",cancel:"Cancel",saveMonth:"Save Month",close:"Close",downloadCard:"Download Card",achModalHead:"Achievement Unlocked",achTitle:"Mission Complete",achDebtFree:"Debt-Free Unlocked",achMsg:"Great job. You completed this month and moved closer to a debt-free life.",achMsgFree:"Amazing! You reached your debt-free goal.",achFooter:"Pay Debt First · Save First · Spend with Intention",completed:"Completed",inProgress:"In Progress",risk:"Risk",notStarted:"Not Started",onTrack:"On Track",needCheck:"Need Check",startNow:"Start Now",debtFree:"Debt Free",personalUse:"Personal Use",fixedCost:"Fixed Cost",status:"Status",debtPay:"Debt Pay",debtLeft:"Debt Left",paid:"Debt Paid",saving:"Saving",checklist:"Checklist"}
+};
+const checklistItems=[
+ {key:"debtPaid",mixed:["จ่ายหนี้แล้ว","Paid debt"],th:["จ่ายหนี้แล้ว","จ่ายหนี้ของเดือนนี้"],en:["Debt paid","Paid debt"]},
+ {key:"savingDone",mixed:["โอนเงินเก็บแล้ว","Saving transferred"],th:["โอนเงินเก็บแล้ว","ย้ายเงินเก็บแล้ว"],en:["Saving transferred","Saving transferred"]},
+ {key:"foodControlled",mixed:["คุมค่ากินได้","Food controlled"],th:["คุมค่ากินได้","ใช้ค่ากินอยู่ในงบ"],en:["Food controlled","Food budget controlled"]},
+ {key:"noNewDebt",mixed:["ไม่มีหนี้ใหม่","No new debt"],th:["ไม่มีหนี้ใหม่","ไม่สร้างหนี้เพิ่ม"],en:["No new debt","No new debt"]},
+ {key:"balanceUpdated",mixed:["อัปเดตยอดจริงแล้ว","Balance updated"],th:["อัปเดตยอดจริงแล้ว","อัปเดตยอดคงเหลือ"],en:["Balance updated","Balance updated"]}
+];
+const defaultData={appName:"Money Mission Tracker",ownerName:"Beam",languageMode:"mixed",startingDebt:55000,targetMonths:7,months:Array.from({length:7},(_,i)=>({month:i+1,income:33275,house:4600,transport:2600,food:8000,debtPay:i===6?4000:8500,saving:4000,checklist:{debtPaid:false,savingDone:false,foodControlled:false,noNewDebt:false,balanceUpdated:false},achievementShown:false}))};
+let data=loadData(),activeTab="dashboard",editingIndex=null,currentAchievementIndex=null;
+function lang(){return data.languageMode||"mixed"} function t(k){return TXT[lang()][k]||TXT.mixed[k]||k}
+function loadData(){try{const saved=localStorage.getItem(STORAGE_KEY)||localStorage.getItem("moneyMissionTrackerV5")||localStorage.getItem("moneyMissionTrackerV4")||localStorage.getItem("moneyMissionTrackerV3");return saved?normalizeData(JSON.parse(saved)):structuredClone(defaultData)}catch(e){return structuredClone(defaultData)}}
+function normalizeData(o){const s={...structuredClone(defaultData),...o};s.appName=String(s.appName||"Money Mission Tracker");s.ownerName=String(s.ownerName||"Beam");s.languageMode=["th","en","mixed"].includes(s.languageMode)?s.languageMode:"mixed";s.startingDebt=Number(s.startingDebt)||0;s.targetMonths=Number(s.targetMonths)||7;s.months=(Array.isArray(s.months)?s.months:defaultData.months).map((m,i)=>({month:Number(m.month)||i+1,income:Number(m.income)||0,house:Number(m.house)||0,transport:Number(m.transport)||0,food:Number(m.food)||0,debtPay:Number(m.debtPay)||0,saving:Number(m.saving)||0,checklist:{debtPaid:!!m.checklist?.debtPaid,savingDone:!!m.checklist?.savingDone,foodControlled:!!m.checklist?.foodControlled,noNewDebt:!!m.checklist?.noNewDebt,balanceUpdated:!!m.checklist?.balanceUpdated},achievementShown:!!m.achievementShown}));return s}
+function fmt(n){return new Intl.NumberFormat(lang()==="en"?"en-US":"th-TH",{maximumFractionDigits:0}).format(Math.round(Number(n)||0))}
+function pct(n){const x=Math.max(0,Math.min(100,Number(n)||0));return `${x.toFixed(x%1===0?0:1)}%`}
+function fixedCost(m){return +m.house + +m.transport + +m.food} function personalUse(m){return +m.income-fixedCost(m)-(+m.debtPay)-(+m.saving)} function plannedPaid(){return data.months.reduce((s,m)=>s+(+m.debtPay||0),0)} function totalPaid(){return data.months.reduce((s,m)=>s+(m.checklist?.debtPaid?(+m.debtPay||0):0),0)} function totalSaving(){return data.months.reduce((s,m)=>s+(+m.saving||0),0)} function actualSaving(){return data.months.reduce((s,m)=>s+(m.checklist?.savingDone?(+m.saving||0):0),0)} function plannedPaidUntil(i){return data.months.slice(0,i+1).reduce((s,m)=>s+(+m.debtPay||0),0)} function paidUntil(i){return data.months.slice(0,i+1).reduce((s,m)=>s+(m.checklist?.debtPaid?(+m.debtPay||0):0),0)} function remainingDebtAfter(i){return Math.max(0,data.startingDebt-paidUntil(i))} function checklistCount(m){return checklistItems.filter(x=>m.checklist?.[x.key]).length}
+function statusObj(m){const c=checklistCount(m),p=personalUse(m); if(p<0||!m.checklist.noNewDebt)return{text:t("risk"),cls:"risk"}; if(c===5)return{text:t("completed"),cls:"done"}; if(c>0)return{text:t("inProgress"),cls:"progress"}; return{text:t("notStarted"),cls:"neutral"}}
+function selectedIndex(){const v=Number(document.getElementById("selectedMonth")?.value||1);return Math.max(0,data.months.findIndex(m=>m.month===v))}
+function renderLang(){document.documentElement.lang=lang()==="en"?"en":"th";document.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));document.getElementById("brandAppName").textContent=data.appName;document.getElementById("brandOwnerName").textContent=data.ownerName;document.title=`${data.appName} | ${data.ownerName}`;const page={dashboard:t("dashboardTitle"),monthly:t("monthlyTitle"),checklist:t("checklistPageTitle"),progress:t("progressTitle"),setting:t("settingTitle")};document.getElementById("pageTitle").textContent=page[activeTab];document.getElementById("achModalHead").textContent=t("achModalHead");document.getElementById("achLblPaid").textContent=t("paid");document.getElementById("achLblLeft").textContent=t("debtLeft");document.getElementById("achLblSaving").textContent=t("saving");document.getElementById("achFooter").textContent=t("achFooter")}
+function switchTab(tab){activeTab=tab;document.querySelectorAll(".tab-page").forEach(e=>e.classList.remove("active"));document.getElementById(`tab-${tab}`).classList.add("active");document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));render()}
+function render(){renderLang();renderSettings();renderKpis();renderInsights();renderDashboardCards();renderMonthSelector();renderMonthRows();renderChecklist();renderTimeline();renderProgressRows()}
+function renderSettings(){["appName","ownerName","languageMode","startingDebt","targetMonths"].forEach(id=>{const el=document.getElementById(id); if(el)el.value=data[id]});const mp=document.getElementById("minPayDisplay");if(mp)mp.value=fmt(data.targetMonths>0?data.startingDebt/data.targetMonths:0)}
+function renderKpis(){
+const paid=totalPaid(),forecast=plannedPaid(),remain=Math.max(0,data.startingDebt-paid),prog=data.startingDebt?Math.min(100,paid/data.startingDebt*100):0,forecastProg=data.startingDebt?Math.min(100,forecast/data.startingDebt*100):0,risk=data.months.filter(m=>personalUse(m)<0||!m.checklist.noNewDebt).length,complete=data.months.filter(m=>checklistCount(m)===5).length;
+document.getElementById("kpiRemainingDebt").textContent=fmt(remain);
+document.getElementById("kpiProgress").textContent=pct(prog);
+document.getElementById("kpiSaving").textContent=fmt(actualSaving());
+document.getElementById("sideProgress").textContent=pct(prog);
+document.getElementById("sideNote").textContent=`${fmt(paid)} actual / ${fmt(data.startingDebt)}`;
+document.getElementById("topDebtPill").textContent=`${t("debtLeft")}: ${fmt(remain)}`;
+document.getElementById("topLangPill").textContent=`Language: ${lang().toUpperCase()}`;
+let st=t("onTrack"),note=lang()==="en"?"On track":"แผนยังไปต่อได้";
+if(remain<=0){st=t("debtFree");note=lang()==="en"?"Completed":"ปิดหนี้แล้ว"}
+else if(risk>0){st=t("needCheck");note=lang()==="en"?`${risk} month(s) need review`:`${risk} เดือนควรตรวจสอบ`}
+else if(!complete){st=t("startNow");note=lang()==="en"?"Start updating checklist":"เริ่มอัปเดต checklist"}
+document.getElementById("kpiStatus").textContent=st;
+document.getElementById("kpiStatusNote").textContent=note;
+document.getElementById("overallProgressText").textContent=`${fmt(paid)} / ${fmt(data.startingDebt)}`;
+document.getElementById("overallProgressFill").style.width=`${prog}%`;
+document.getElementById("overallProgressNote").innerHTML=remain<=0?`<span class="accent-green"><b>Congrats!</b></span> ${lang()==="en"?"Debt-free based on actual checked payments.":"ปิดหนี้จากยอดจ่ายจริงที่ติ๊กแล้ว"}`:`${t("debtLeft")}: <b>${fmt(remain)}</b> · ${t("planForecast")}: <b>${fmt(forecast)}</b> (${pct(forecastProg)})`;
+document.getElementById("progressPaid").textContent=fmt(paid);
+document.getElementById("progressForecast").textContent=fmt(forecast);
+document.getElementById("progressLeft").textContent=fmt(remain);
+document.getElementById("progressPct").textContent=pct(prog)
+}
+function insights(){
+const paid=totalPaid(),forecast=plannedPaid(),remain=Math.max(0,data.startingDebt-paid),min=data.targetMonths?data.startingDebt/data.targetMonths:0,riskPersonal=data.months.filter(m=>personalUse(m)<0).length,low=data.months.filter(m=>m.debtPay<min&&remain>0).length,noNew=data.months.filter(m=>!m.checklist.noNewDebt).length,extra=data.months.filter(m=>m.debtPay>8500).length;
+let a=[];
+a.push(remain<=0?{cls:"good",text:lang()==="en"?`<b>Debt Free:</b> Actual paid ${fmt(paid)}.`:`<b>Debt Free:</b> ยอดจ่ายจริง ${fmt(paid)} บาท`}:{cls:"warn",text:lang()==="en"?`<b>Actual Remaining:</b> ${fmt(remain)} left. Forecast planned payment is ${fmt(forecast)}.`:`<b>หนี้คงเหลือจริง:</b> ${fmt(remain)} บาท · ยอดตามแผน ${fmt(forecast)} บาท`});
+a.push(riskPersonal?{cls:"bad",text:lang()==="en"?`<b>Budget Risk:</b> ${riskPersonal} month(s) negative.`:`<b>งบเสี่ยง:</b> มี ${riskPersonal} เดือนติดลบ`}:{cls:"good",text:lang()==="en"?`<b>Budget Healthy:</b> No negative Personal Use.`:`<b>งบดี:</b> ไม่มีเดือนที่เงินใช้ส่วนตัวติดลบ`});
+a.push(low?{cls:"warn",text:lang()==="en"?`<b>Below Target:</b> ${low} month(s).`:`<b>ต่ำกว่า Target:</b> ${low} เดือน` }:{cls:"good",text:lang()==="en"?`<b>Payment Plan OK:</b> Plan is aligned with target.`:`<b>แผนจ่ายหนี้ OK:</b> สอดคล้องกับเป้าหมาย`});
+if(noNew)a.push({cls:"bad",text:lang()==="en"?`<b>No New Debt:</b> ${noNew} month(s) not confirmed.`:`<b>No New Debt:</b> ยังไม่ยืนยัน ${noNew} เดือน`});
+if(extra)a.push({cls:"good",text:lang()==="en"?`<b>Extra Paydown Plan:</b> ${extra} month(s).`:`<b>Extra Paydown Plan:</b> ${extra} เดือน`});
+return a
+}
+function renderInsights(){document.getElementById("dashboardInsights").innerHTML=insights().slice(0,4).map(i=>`<div class="insight ${i.cls}">${i.text}</div>`).join("")}
+function renderDashboardCards(){document.getElementById("dashboardMonthCards").innerHTML=data.months.slice(0,4).map((m,i)=>{const s=statusObj(m);return `<div class="month-card"><h4>Month ${m.month}</h4><div class="month-stat"><span>${t("debtPay")}</span><span>${fmt(m.debtPay)}</span></div><div class="month-stat"><span>${t("personalUse")}</span><span class="${personalUse(m)<0?'accent-pink':''}">${fmt(personalUse(m))}</span></div><div class="month-stat"><span>${t("debtLeft")}</span><span>${fmt(remainingDebtAfter(i))}</span></div><div class="month-stat"><span>${t("status")}</span><span><span class="badge ${s.cls}">${s.text}</span></span></div></div>`}).join("")}
+function renderMonthSelector(){const sel=document.getElementById("selectedMonth");if(!sel)return;const cur=sel.value||"1";sel.innerHTML=data.months.map(m=>`<option value="${m.month}">Month ${m.month}</option>`).join("");sel.value=data.months.some(m=>String(m.month)===String(cur))?cur:(data.months[0]?.month||1)}
+function renderMonthRows(){document.getElementById("monthRows").innerHTML=data.months.map((m,i)=>{const s=statusObj(m);return `<tr><td class="month-cell">Month ${m.month}</td><td class="num">${fmt(m.income)}</td><td class="num">${fmt(fixedCost(m))}</td><td class="num">${fmt(m.debtPay)}</td><td class="num">${fmt(m.saving)}</td><td class="num ${personalUse(m)<0?'accent-pink':''}">${fmt(personalUse(m))}</td><td class="num">${fmt(remainingDebtAfter(i))}</td><td><span class="badge ${s.cls}">${s.text}</span></td><td><button class="small" onclick="openEditModal(${i})"><svg class="svgicon"><use href="#ico-edit"/></svg>Edit</button> <button class="secondary small" onclick="goChecklist(${m.month})"><svg class="svgicon"><use href="#ico-check"/></svg>${t("checklist")}</button></td></tr>`}).join("")}
+function renderChecklist(){const idx=selectedIndex(),m=data.months[idx];document.getElementById("checklistArea").innerHTML=checklistItems.map(item=>`<label class="check-card"><input type="checkbox" ${m.checklist[item.key]?"checked":""} onchange="updateChecklist(${idx},'${item.key}',this.checked)"><div><h4>${item[lang()][0]}</h4><p>${item[lang()][1]}</p></div></label>`).join("");const c=checklistCount(m),percent=c/5*100,s=statusObj(m);document.getElementById("viewAchievementBtn").style.display=c===5?"inline-flex":"none";document.getElementById("checkProgressLabel").textContent=`Month ${m.month}`;document.getElementById("checkProgressText").textContent=pct(percent);document.getElementById("checkProgressFill").style.width=`${percent}%`;document.getElementById("selectedSnapshot").innerHTML=`<div class="month-card"><h4>${t("personalUse")}</h4><div class="month-stat"><span>${t("personalUse")}</span><span class="${personalUse(m)<0?'accent-pink':''}">${fmt(personalUse(m))}</span></div><div class="month-stat"><span>${t("fixedCost")}</span><span>${fmt(fixedCost(m))}</span></div></div><div class="month-card"><h4>${t("checklist")}</h4><div class="month-stat"><span>${t("completed")}</span><span>${c}/5</span></div><div class="month-stat"><span>${t("status")}</span><span><span class="badge ${s.cls}">${s.text}</span></span></div></div>`}
+function renderTimeline(){
+document.getElementById("debtTimeline").innerHTML=data.months.map((m,i)=>{
+const actual=paidUntil(i),planned=plannedPaidUntil(i),actualProg=data.startingDebt?Math.min(100,actual/data.startingDebt*100):0,plannedProg=data.startingDebt?Math.min(100,planned/data.startingDebt*100):0;
+return `<div class="timeline-item"><div class="timeline-month">M${m.month}</div><div><div class="timeline-bar"><div class="timeline-fill" style="width:${actualProg}%"></div></div><div class="timeline-sub">${fmt(actual)} actual · ${fmt(planned)} forecast · ${fmt(remainingDebtAfter(i))} left</div></div><div class="timeline-value">${pct(actualProg)}</div></div>`
+}).join("")
+}
+function renderProgressRows(){
+const min=data.targetMonths?data.startingDebt/data.targetMonths:0;
+document.getElementById("progressRows").innerHTML=data.months.map((m,i)=>{
+const actual=paidUntil(i),planned=plannedPaidUntil(i),prog=data.startingDebt?Math.min(100,actual/data.startingDebt*100):0,remark=m.checklist?.debtPaid?"Paid":(m.debtPay<min?"Below Target Plan":"Planned"),cls=remark==="Paid"?"done":remark==="Below Target Plan"?"risk":"progress";
+return `<tr><td class="month-cell">Month ${m.month}</td><td class="num">${fmt(m.debtPay)}</td><td class="num">${fmt(actual)}</td><td class="num">${fmt(planned)}</td><td class="num">${fmt(remainingDebtAfter(i))}</td><td class="num">${pct(prog)}</td><td><span class="badge ${cls}">${remark}</span></td></tr>`
+}).join("")
+}
+function updateAppName(v){data.appName=String(v||"Money Mission Tracker").trim()||"Money Mission Tracker";renderLang();autoSave()}function updateOwnerName(v){data.ownerName=String(v||"Beam").trim()||"Beam";renderLang();autoSave()}function updateLanguage(v){data.languageMode=["th","en","mixed"].includes(v)?v:"mixed";render();autoSave()}function updateStartingDebt(v){data.startingDebt=Math.max(0,Number(v)||0);render();autoSave()}function updateTargetMonths(v){data.targetMonths=Math.max(1,Number(v)||1);render();autoSave()}
+function updateChecklist(i,k,checked){data.months[i].checklist[k]=!!checked;const complete=checklistCount(data.months[i])===5;if(complete&&!data.months[i].achievementShown){data.months[i].achievementShown=true;render();autoSave();openAchievementModal(i);return}render();autoSave()}
+function goChecklist(month){switchTab("checklist");setTimeout(()=>{document.getElementById("selectedMonth").value=month;renderChecklist()},0)}
+function addMonth(){const last=data.months.at(-1);data.months.push({month:last?last.month+1:1,income:last?.income??33275,house:last?.house??4600,transport:last?.transport??2600,food:last?.food??8000,debtPay:8500,saving:last?.saving??4000,checklist:{debtPaid:false,savingDone:false,foodControlled:false,noNewDebt:false,balanceUpdated:false},achievementShown:false});data.targetMonths=Math.max(data.targetMonths,data.months.length);render();autoSave();toast("Added new month")}
+function openEditModal(i){editingIndex=i;const m=data.months[i];document.getElementById("modalTitle").textContent=`Edit Month ${m.month}`;editIncome.value=m.income;editHouse.value=m.house;editTransport.value=m.transport;editFood.value=m.food;editDebtPay.value=m.debtPay;editSaving.value=m.saving;editModal.classList.add("show");updateEditPreview()}
+function updateEditPreview(){const income=+editIncome.value||0,house=+editHouse.value||0,transport=+editTransport.value||0,food=+editFood.value||0,debtPay=+editDebtPay.value||0,saving=+editSaving.value||0,p=income-house-transport-food-debtPay-saving;editPreview.innerHTML=p<0?`<span class="accent-pink"><b>Risk:</b> ${t("personalUse")} -${fmt(Math.abs(p))}</span>`:`<span class="accent-green"><b>OK:</b> ${t("personalUse")} ${fmt(p)}</span>`}
+["editIncome","editHouse","editTransport","editFood","editDebtPay","editSaving"].forEach(id=>document.addEventListener("input",e=>{if(e.target.id===id)updateEditPreview()}));
+function saveEditMonth(){if(editingIndex===null)return;const m=data.months[editingIndex];m.income=+editIncome.value||0;m.house=+editHouse.value||0;m.transport=+editTransport.value||0;m.food=+editFood.value||0;m.debtPay=+editDebtPay.value||0;m.saving=+editSaving.value||0;closeEditModal();render();autoSave();toast("Month updated")}
+function closeEditModal(){editingIndex=null;editModal.classList.remove("show")}function closeModalOnBackdrop(e){if(e.target.id==="editModal")closeEditModal()}
+function openAchievementForSelected(){const i=selectedIndex();if(checklistCount(data.months[i])<5){toast("Complete checklist 5/5 first");return}openAchievementModal(i)}
+function openAchievementModal(i){currentAchievementIndex=i;const m=data.months[i],left=remainingDebtAfter(i),free=left<=0;achSubtitle.textContent=`Month ${m.month} Completed`;achTitle.textContent=free?t("achDebtFree"):t("achTitle");achMessage.textContent=free?t("achMsgFree"):t("achMsg");achDebtPaid.textContent=fmt(m.debtPay);achDebtLeft.textContent=fmt(left);achSaving.textContent=fmt(m.saving);achievementModal.classList.add("show")}
+function closeAchievementModal(){currentAchievementIndex=null;achievementModal.classList.remove("show")}function closeAchievementOnBackdrop(e){if(e.target.id==="achievementModal")closeAchievementModal()}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function wrap(ctx,text,x,y,max,lineH){let words=String(text).split(" "),line="";for(let i=0;i<words.length;i++){let test=line+words[i]+" ";if(ctx.measureText(test).width>max&&i>0){ctx.fillText(line.trim(),x,y);line=words[i]+" ";y+=lineH}else line=test}ctx.fillText(line.trim(),x,y);return y}
+function downloadAchievementCard(){const i=currentAchievementIndex??selectedIndex(),m=data.months[i],left=remainingDebtAfter(i),free=left<=0,W=1080,H=1350,c=document.createElement("canvas");c.width=W;c.height=H;const ctx=c.getContext("2d");let g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,"#09070f");g.addColorStop(.45,"#1d0b2a");g.addColorStop(1,"#08060d");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);let rg=ctx.createRadialGradient(220,180,10,220,180,420);rg.addColorStop(0,"rgba(255,210,77,.58)");rg.addColorStop(.45,"rgba(255,79,163,.22)");rg.addColorStop(1,"rgba(255,79,163,0)");ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);let rg2=ctx.createRadialGradient(860,230,10,860,230,390);rg2.addColorStop(0,"rgba(255,79,163,.5)");rg2.addColorStop(.5,"rgba(157,78,221,.26)");rg2.addColorStop(1,"rgba(157,78,221,0)");ctx.fillStyle=rg2;ctx.fillRect(0,0,W,H);roundRect(ctx,78,88,924,1174,56);let p=ctx.createLinearGradient(78,88,1002,1262);p.addColorStop(0,"rgba(255,255,255,.15)");p.addColorStop(1,"rgba(255,255,255,.055)");ctx.fillStyle=p;ctx.fill();ctx.strokeStyle="rgba(255,255,255,.22)";ctx.lineWidth=3;ctx.stroke();roundRect(ctx,124,138,132,132,38);let b=ctx.createLinearGradient(124,138,256,270);b.addColorStop(0,"#ffd24d");b.addColorStop(.52,"#ff4fa3");b.addColorStop(1,"#9d4edd");ctx.fillStyle=b;ctx.fill();ctx.fillStyle="#2b1200";ctx.font="900 74px 'Noto Sans Thai', Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("✓",190,205);ctx.textAlign="left";ctx.textBaseline="alphabetic";ctx.fillStyle="#fff0a8";ctx.font="900 34px 'Noto Sans Thai', Arial";ctx.fillText(lang()==="th"?"ปลดล็อกความสำเร็จ":"ACHIEVEMENT UNLOCKED",124,350);ctx.fillStyle="#fff8ff";ctx.font="900 76px 'Noto Sans Thai', Arial";ctx.fillText(free?t("achDebtFree"):t("achTitle"),124,445);ctx.fillStyle="#ffb1d7";ctx.font="900 42px 'Noto Sans Thai', Arial";ctx.fillText(`Month ${m.month} Completed`,124,510);ctx.fillStyle="#eadff5";ctx.font="700 34px 'Noto Sans Thai', Arial";wrap(ctx,free?t("achMsgFree"):t("achMsg"),124,595,800,48);const metrics=[[t("paid"),fmt(m.debtPay)],[t("debtLeft"),fmt(left)],[t("saving"),fmt(m.saving)],["Checklist","5/5"]];const boxW=390,boxH=152,gap=26,startY=720;metrics.forEach((it,j)=>{const col=j%2,row=Math.floor(j/2),x=124+col*(boxW+gap),y=startY+row*(boxH+gap);roundRect(ctx,x,y,boxW,boxH,26);ctx.fillStyle="rgba(0,0,0,.20)";ctx.fill();ctx.strokeStyle="rgba(255,255,255,.14)";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#cdbfe0";ctx.font="900 25px 'Noto Sans Thai', Arial";ctx.fillText(it[0].toUpperCase(),x+26,y+50);ctx.fillStyle="#fff8ff";ctx.font="900 48px 'Noto Sans Thai', Arial";ctx.fillText(it[1],x+26,y+112)});ctx.fillStyle="#fff0a8";ctx.font="900 30px 'Noto Sans Thai', Arial";ctx.fillText(t("achFooter"),124,1136);ctx.fillStyle="#cdbfe0";ctx.font="700 26px 'Noto Sans Thai', Arial";ctx.fillText(`${data.appName} · ${data.ownerName}`,124,1200);const a=document.createElement("a");a.href=c.toDataURL("image/png");a.download=`achievement-month-${m.month}.png`;a.click();toast("Achievement card downloaded")}
+function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));toast("Saved")}function autoSave(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+function openResetModal(){resetModal.classList.add("show")}
+function closeResetModal(){resetModal.classList.remove("show")}
+function closeResetOnBackdrop(e){if(e.target.id==="resetModal")closeResetModal()}
+function confirmResetPlan(){data=structuredClone(defaultData);autoSave();closeResetModal();render();toast("Reset completed")}
+function resetData(){openResetModal()}
+function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="money-mission-tracker-v6-backup.json";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast("Backup exported")}
+function importDataPrompt(){const input=document.createElement("input");input.type="file";input.accept="application/json";input.onchange=()=>{const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{data=normalizeData(JSON.parse(reader.result));saveData();render();toast("Backup imported")}catch(e){alert("Invalid backup file")}};reader.readAsText(file)};input.click()}
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),1800)}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeEditModal();closeAchievementModal();closeResetModal()}});
+render();
+</script>
+</body>
+</html>
